@@ -8,7 +8,7 @@ from app.core.database import get_db
 router = APIRouter(prefix="/health", tags=["Health"])
 
 
-@router.get("", summary="Health Check")
+@router.api_route("", methods=["GET", "HEAD"], summary="Health Check")
 async def health_check(db: AsyncSession = Depends(get_db)):
     """
     Performs a system and database connectivity health check.

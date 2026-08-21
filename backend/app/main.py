@@ -62,9 +62,9 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-@app.get("/", tags=["Root"])
+@app.api_route("/", methods=["GET", "HEAD"], tags=["Root"])
 async def root():
-    """Root landing endpoint with system status and documentation links."""
+    """Root landing endpoint with system status and documentation links (supports Render HEAD health checks)."""
     return {
         "name": "YouTube Shorts AI API",
         "version": "1.0.0",
