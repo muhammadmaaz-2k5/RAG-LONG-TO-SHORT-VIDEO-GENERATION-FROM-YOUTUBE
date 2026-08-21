@@ -47,20 +47,29 @@ app.add_middleware(
 @app.middleware("http")
 async def add_cors_headers(request: Request, call_next):
     """Guarantees CORS headers on every single response including OPTIONS preflights and errors."""
+    origin = request.headers.get("origin") or "*"
+    req_headers = request.headers.get("access-control-request-headers") or "*"
+
     if request.method == "OPTIONS":
         from fastapi.responses import Response
         response = Response(status_code=200)
-    else:
-        try:
-            response = await call_next(request)
-        except Exception as exc:
-            logger.error(f"Middleware caught unhandled error on {request.url.path}: {exc}", exc_info=True)
-            response = JSONResponse(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                content={"detail": "An internal server error occurred.", "error": str(exc)},
-            )
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+        response.headers["Access-Control-Allow-Headers"] = req_headers
+        response.headers["Access-Control-Max-Age"] = "86400"
+        return response
+
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        logger.error(f"Middleware caught unhandled error on {request.url.path}: {exc}", exc_info=True)
+        response = JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "An internal server error occurred.", "error": str(exc)},
+        )
+
+    response.headers["Access-Control-Allow-Origin"] = origin
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
     response.headers["Access-Control-Allow-Headers"] = "*"
     return response
 
