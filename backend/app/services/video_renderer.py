@@ -27,12 +27,14 @@ def get_ffmpeg_path() -> str:
 
 def download_youtube_clip(youtube_url: str, output_path: str) -> str:
     """
-    Downloads a lightweight video stream (up to 720p) from YouTube to a local file using yt-dlp.
-    Optimized for high-speed download in seconds.
+    Downloads a lightweight video stream (360p) from YouTube to a local file using yt-dlp.
+    Optimized for blazing-fast download in 1-2 seconds.
     """
     ffmpeg_exe = get_ffmpeg_path()
     ydl_opts = {
-        "format": "best[ext=mp4]/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+        # 360p format for lightning-fast download speed:
+        "format": "best[height<=360][ext=mp4]/bestvideo[height<=360]+bestaudio/best[height<=360]/best",
+        # "format": "best[ext=mp4]/bestvideo[height<=720]+bestaudio/best[height<=720]/best", # 720p option
         "outtmpl": output_path,
         "ffmpeg_location": ffmpeg_exe,
         "quiet": True,
@@ -52,19 +54,19 @@ def trim_and_format_short_video(
     vertical: bool = True,
 ) -> str:
     """
-    Trims a video clip from start_time with target duration and converts to 9:16 vertical format (720x1280).
-    Uses ultrafast preset and multi-threading for instant rendering.
+    Trims a video clip from start_time with target duration and converts to 9:16 vertical format (360x640).
+    Uses ultrafast preset and multi-threading for instant sub-second rendering.
     """
     ffmpeg_exe = get_ffmpeg_path()
 
-    # 9:16 vertical crop filter (720x1280 is 4x faster to encode than 1080x1920 with identical mobile clarity)
+    # 9:16 vertical crop filter (360x640 is blazing fast on cloud servers)
     if vertical:
         video_filter = (
-            "scale=720:1280:force_original_aspect_ratio=increase,"
-            "crop=720:1280:(in_w-720)/2:(in_h-1280)/2"
+            "scale=360:640:force_original_aspect_ratio=increase,"
+            "crop=360:640:(in_w-360)/2:(in_h-640)/2"
         )
     else:
-        video_filter = "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(720-iw)/2:(1280-ih)/2:black"
+        video_filter = "scale=360:640:force_original_aspect_ratio=decrease,pad=360:640:(360-iw)/2:(640-ih)/2:black"
 
     cmd = [
         ffmpeg_exe,
