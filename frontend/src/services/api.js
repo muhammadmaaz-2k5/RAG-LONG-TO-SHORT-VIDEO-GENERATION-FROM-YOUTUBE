@@ -5,7 +5,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 120000, // 2 minutes for long-running video render/embeddings
+  timeout: 300000, // 5 minutes for long-running video render/embeddings
 });
 
 export const extractErrorMessage = (err) => {
