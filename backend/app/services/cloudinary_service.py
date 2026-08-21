@@ -27,11 +27,17 @@ def upload_thumbnail(image_url_or_path: str, video_id: int) -> str:
         return image_url_or_path
 
     try:
+        upload_kwargs = {
+            "folder": "youtube-shorts-ai/thumbnails",
+            "public_id": f"video_{video_id}",
+            "overwrite": True,
+        }
+        if settings.CLOUDINARY_UPLOAD_PRESET:
+            upload_kwargs["upload_preset"] = settings.CLOUDINARY_UPLOAD_PRESET
+
         result = cloudinary.uploader.upload(
             image_url_or_path,
-            folder="youtube-shorts-ai/thumbnails",
-            public_id=f"video_{video_id}",
-            overwrite=True,
+            **upload_kwargs,
         )
         return result.get("secure_url", image_url_or_path)
     except Exception as e:
@@ -46,12 +52,18 @@ def upload_rendered_short(file_path: str, short_id: int) -> Dict[str, Any]:
     if not (settings.CLOUDINARY_CLOUD_NAME and settings.CLOUDINARY_API_KEY):
         raise ValueError("Cloudinary credentials are required for video uploads.")
 
+    upload_kwargs = {
+        "resource_type": "video",
+        "folder": "youtube-shorts-ai/shorts",
+        "public_id": f"short_{short_id}",
+        "overwrite": True,
+    }
+    if settings.CLOUDINARY_UPLOAD_PRESET:
+        upload_kwargs["upload_preset"] = settings.CLOUDINARY_UPLOAD_PRESET
+
     result = cloudinary.uploader.upload(
         file_path,
-        resource_type="video",
-        folder="youtube-shorts-ai/shorts",
-        public_id=f"short_{short_id}",
-        overwrite=True,
+        **upload_kwargs,
     )
 
     thumbnail_url = cloudinary.CloudinaryImage(result["public_id"]).build_url(
