@@ -43,6 +43,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def add_cors_headers(request: Request, call_next):
+    """Guarantees CORS headers on every single response including OPTIONS preflights and errors."""
+    if request.method == "OPTIONS":
+        from fastapi.responses import Response
+        response = Response(status_code=200)
+    else:
+        try:
+            response = await call_next(request)
+        except Exception as exc:
+            logger.error(f"Middleware caught unhandled error on {request.url.path}: {exc}", exc_info=True)
+            response = JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"detail": "An internal server error occurred.", "error": str(exc)},
+            )
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
+
+
 # Register API routes
 app.include_router(api_router)
 

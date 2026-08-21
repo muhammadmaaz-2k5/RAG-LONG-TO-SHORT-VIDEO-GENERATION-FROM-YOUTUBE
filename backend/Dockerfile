@@ -24,4 +24,4 @@ COPY . .
 EXPOSE 8000
 
 # Set default command using $PORT from environment (Render compatibility)
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
