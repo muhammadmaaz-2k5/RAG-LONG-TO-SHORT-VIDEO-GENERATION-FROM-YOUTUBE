@@ -14,17 +14,15 @@ async def health_check(db: AsyncSession = Depends(get_db)):
     Performs a system and database connectivity health check.
     """
     db_status = "healthy"
+    is_ok = True
     try:
         await db.execute(text("SELECT 1"))
     except Exception as e:
         db_status = f"unhealthy: {str(e)}"
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={"status": "error", "database": db_status},
-        )
+        is_ok = False
 
     return {
-        "status": "ok",
+        "status": "ok" if is_ok else "degraded",
         "database": db_status,
         "environment": settings.ENVIRONMENT,
         "embedding_model": settings.EMBEDDING_MODEL,
