@@ -121,3 +121,28 @@ async def regenerate_short(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Short regeneration failed: {str(e)}",
         )
+
+
+@router.post("/{short_id}/render", response_model=ShortResponse, summary="Render and Trim Short Video")
+async def render_short(
+    short_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Downloads source video, trims exact Short timestamps, crops to 9:16 vertical MP4,
+    and uploads to Cloudinary.
+    """
+    from app.services.video_renderer import render_short_video
+    try:
+        updated_short, video_url = await render_short_video(
+            session=db,
+            short_id=short_id,
+        )
+        return ShortResponse.model_validate(updated_short)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Short video rendering failed: {str(e)}",
+        )

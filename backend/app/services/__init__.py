@@ -12,6 +12,8 @@ from app.services.transcript import TranscriptFetchError, fetch_youtube_transcri
 from app.services.vector_store import insert_transcript_chunks, search_similar_chunks
 from app.services.youtube import extract_youtube_id, fetch_youtube_metadata
 
+from app.services.video_renderer import render_short_video
+
 __all__ = [
     "extract_youtube_id",
     "fetch_youtube_metadata",
@@ -32,4 +34,5 @@ __all__ = [
     "upload_rendered_short",
     "generate_shorts_for_video",
     "regenerate_single_short",
+    "render_short_video",
 ]
