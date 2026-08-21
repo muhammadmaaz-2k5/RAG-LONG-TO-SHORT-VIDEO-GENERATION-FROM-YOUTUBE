@@ -27,33 +27,43 @@ def fetch_youtube_transcript(
     if languages is None:
         languages = ["en", "en-US", "en-GB", "a.en"]
 
+    raw_snippets: List[Dict[str, float | str]] = []
+    
     try:
-        # Try fetching using specified or default language preference
-        transcript_list = YouTubeTranscriptApi.list_transcripts(youtube_id)
+        # 1. Try modern API (v1.2+): YouTubeTranscriptApi().fetch(...) or YouTubeTranscriptApi.fetch(...)
+        api_obj = YouTubeTranscriptApi() if callable(YouTubeTranscriptApi) else YouTubeTranscriptApi
         
-        # Try finding requested language or auto-generated
-        try:
-            transcript = transcript_list.find_transcript(languages)
-        except Exception:
-            # Fall back to finding any manually created or generated transcript
+        if hasattr(api_obj, "fetch"):
+            fetched = api_obj.fetch(youtube_id, languages=languages)
+            raw_snippets = [
+                {"text": s.text, "start": float(s.start), "duration": float(s.duration)}
+                for s in fetched
+            ]
+        elif hasattr(api_obj, "get_transcript"):
+            raw_snippets = api_obj.get_transcript(youtube_id, languages=languages)
+        elif hasattr(YouTubeTranscriptApi, "list_transcripts"):
+            transcript_list = YouTubeTranscriptApi.list_transcripts(youtube_id)
             try:
-                transcript = transcript_list.find_generated_transcript(languages)
+                transcript = transcript_list.find_transcript(languages)
             except Exception:
-                # Pick the first available transcript and translate if necessary
                 first_transcript = next(iter(transcript_list))
-                if first_transcript.is_translatable:
-                    transcript = first_transcript.translate("en")
-                else:
-                    transcript = first_transcript
-
-        raw_snippets = transcript.fetch()
-        
+                transcript = first_transcript.translate("en") if first_transcript.is_translatable else first_transcript
+            raw_snippets = transcript.fetch()
+            
     except (TranscriptsDisabled, NoTranscriptFound, VideoUnavailable) as e:
         raise TranscriptFetchError(f"Transcript unavailable for video {youtube_id}: {str(e)}") from e
     except Exception as e:
-        # Direct fallback attempt with get_transcript
+        # Fallback to fetching any available language
         try:
-            raw_snippets = YouTubeTranscriptApi.get_transcript(youtube_id, languages=languages)
+            api_obj = YouTubeTranscriptApi() if callable(YouTubeTranscriptApi) else YouTubeTranscriptApi
+            if hasattr(api_obj, "fetch"):
+                fetched = api_obj.fetch(youtube_id)
+                raw_snippets = [
+                    {"text": s.text, "start": float(s.start), "duration": float(s.duration)}
+                    for s in fetched
+                ]
+            elif hasattr(api_obj, "get_transcript"):
+                raw_snippets = api_obj.get_transcript(youtube_id)
         except Exception as inner_e:
             raise TranscriptFetchError(
                 f"Failed to retrieve transcript for {youtube_id}: {str(inner_e)}"

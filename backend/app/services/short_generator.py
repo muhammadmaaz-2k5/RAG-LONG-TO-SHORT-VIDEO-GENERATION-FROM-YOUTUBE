@@ -174,5 +174,11 @@ async def regenerate_single_short(
     short.status = ShortStatus.READY
 
     await session.commit()
-    await session.refresh(short, attribute_names=["sources"])
-    return short
+    
+    # Re-query eagerly with relationships to prevent MissingGreenlet on serialization
+    refreshed_res = await session.execute(
+        select(Short)
+        .where(Short.id == short_id)
+        .options(selectinload(Short.sources))
+    )
+    return refreshed_res.scalar_one()

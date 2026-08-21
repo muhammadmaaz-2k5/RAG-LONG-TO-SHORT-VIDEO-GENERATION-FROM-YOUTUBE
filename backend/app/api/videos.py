@@ -162,11 +162,11 @@ async def process_video(video_id: int, db: AsyncSession = Depends(get_db)):
         )
         await db.commit()
 
-        # 5. Insert chunks + pgvectors
-        inserted_ids = await insert_transcript_chunks(
+        # 5. Insert chunks and embeddings into Neon Postgres vector store
+        chunk_ids = await insert_transcript_chunks(
             session=db,
             video_id=video_id,
-            chunks_data=chunks_data,
+            chunks=chunks_data,
             embeddings=embeddings,
         )
 
@@ -179,13 +179,17 @@ async def process_video(video_id: int, db: AsyncSession = Depends(get_db)):
             id=video.id,
             youtube_id=video.youtube_id,
             status=video.status,
-            chunks_created=len(inserted_ids),
+            chunks_created=len(chunk_ids),
             message="Video processed successfully with timestamp-aware chunks and vector embeddings.",
         )
 
-    except (TranscriptFetchError, Exception) as e:
-        video.status = VideoStatus.FAILED
-        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        # Cleanly update status to FAILED
+        video_rec = (await db.execute(select(Video).where(Video.id == video_id))).scalar_one_or_none()
+        if video_rec:
+            video_rec.status = VideoStatus.FAILED
+            await db.commit()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Video processing failed: {str(e)}",

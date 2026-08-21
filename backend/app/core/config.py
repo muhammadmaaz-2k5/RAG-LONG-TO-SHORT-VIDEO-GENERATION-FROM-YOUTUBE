@@ -1,4 +1,5 @@
 from typing import List
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -7,8 +8,11 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/shorts_ai"
     
     # Groq LLM
-    GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_API_KEY: str = Field(..., description="Groq API Key")
+    GROQ_MODEL: str = Field(
+        default="openai/gpt-oss-120b",
+        description="Groq LLM model name (e.g. openai/gpt-oss-120b, qwen/qwen3.6-27b)",
+    )
     
     # Embeddings
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
