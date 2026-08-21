@@ -23,7 +23,8 @@ export default function App() {
   };
 
   const showError = (message) => {
-    setToast({ message, type: 'error' });
+    const text = typeof message === 'string' ? message : JSON.stringify(message);
+    setToast({ message: text, type: 'error' });
   };
 
   // Initial load: pick the most recent video and load its shorts if available

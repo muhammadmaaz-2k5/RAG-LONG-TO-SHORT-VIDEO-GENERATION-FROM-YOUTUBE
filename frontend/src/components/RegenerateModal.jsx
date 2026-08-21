@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, RefreshCw, Sparkles, Clock, Sliders } from 'lucide-react';
-import { regenerateShort } from '../services/api';
+import { regenerateShort, extractErrorMessage } from '../services/api';
 
 export default function RegenerateModal({ short, onClose, onUpdated, onError, onToast }) {
   const [duration, setDuration] = useState(short.duration_seconds || 15);
@@ -27,7 +27,7 @@ export default function RegenerateModal({ short, onClose, onUpdated, onError, on
       onClose();
     } catch (err) {
       console.error(err);
-      const msg = err.response?.data?.detail || err.message || 'Failed to regenerate short.';
+      const msg = extractErrorMessage(err);
       onError(msg);
     } finally {
       setLoading(false);

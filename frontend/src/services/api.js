@@ -8,6 +8,21 @@ const api = axios.create({
   timeout: 120000, // 2 minutes for long-running video render/embeddings
 });
 
+export const extractErrorMessage = (err) => {
+  if (!err) return 'An unexpected error occurred.';
+  const detail = err.response?.data?.detail;
+  if (Array.isArray(detail)) {
+    return detail.map((d) => d.msg || JSON.stringify(d)).join('; ');
+  }
+  if (typeof detail === 'string') {
+    return detail;
+  }
+  if (typeof detail === 'object' && detail !== null) {
+    return JSON.stringify(detail);
+  }
+  return err.message || 'Request failed.';
+};
+
 export const checkHealth = async () => {
   const { data } = await api.get('/health');
   return data;
@@ -15,7 +30,7 @@ export const checkHealth = async () => {
 
 export const getVideos = async () => {
   const { data } = await api.get('/videos');
-  return data;
+  return Array.isArray(data) ? data : data.items || [];
 };
 
 export const getVideo = async (id) => {
@@ -35,17 +50,27 @@ export const processVideo = async (videoId) => {
 
 export const generateShorts = async ({ video_id, count = 3, duration = 15, style = 'VIRAL' }) => {
   const { data } = await api.post('/shorts/generate', {
-    video_id,
-    count,
-    duration,
-    style,
+    video_id: parseInt(video_id, 10),
+    count: parseInt(count, 10),
+    duration: parseInt(duration, 10),
+    style: style.toUpperCase(),
   });
   return data;
 };
 
 export const getShortsForVideo = async (videoId) => {
-  const { data } = await api.get(`/shorts/video/${videoId}`);
-  return data;
+  try {
+    const { data } = await api.get(`/shorts/video/${videoId}`);
+    return Array.isArray(data) ? data : data.items || [];
+  } catch (err) {
+    // Fallback to query param
+    try {
+      const { data } = await api.get(`/shorts?video_id=${videoId}&limit=50`);
+      return Array.isArray(data) ? data : data.items || [];
+    } catch {
+      return [];
+    }
+  }
 };
 
 export const getShort = async (shortId) => {
@@ -54,10 +79,11 @@ export const getShort = async (shortId) => {
 };
 
 export const regenerateShort = async (shortId, { style, duration }) => {
-  const { data } = await api.post(`/shorts/${shortId}/regenerate`, {
-    style,
-    duration,
-  });
+  const payload = {};
+  if (style) payload.style = style.toUpperCase();
+  if (duration) payload.duration = parseInt(duration, 10);
+
+  const { data } = await api.post(`/shorts/${shortId}/regenerate`, payload);
   return data;
 };
 

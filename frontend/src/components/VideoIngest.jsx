@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, Loader2, PlayCircle, Sparkles, Check, Clock, Video } from 'lucide-react';
-import { createVideo, processVideo } from '../services/api';
+import { createVideo, processVideo, extractErrorMessage } from '../services/api';
 
 function YoutubeIcon({ size = 24, className = '' }) {
   return (
@@ -67,7 +67,7 @@ export default function VideoIngest({ onVideoProcessed, onError, onStageChange }
     } catch (err) {
       console.error(err);
       onStageChange(null);
-      const errMsg = err.response?.data?.detail || err.message || 'Failed to process YouTube video.';
+      const errMsg = extractErrorMessage(err);
       onError(errMsg);
     } finally {
       setLoading(false);

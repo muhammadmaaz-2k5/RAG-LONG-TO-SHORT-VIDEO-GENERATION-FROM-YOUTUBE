@@ -79,6 +79,20 @@ async def list_shorts(
     )
 
 
+@router.get("/video/{video_id}", response_model=List[ShortResponse], summary="Get Shorts for Specific Video")
+async def get_shorts_for_video(video_id: int, db: AsyncSession = Depends(get_db)):
+    """Fetches all generated Shorts for a specific video."""
+    query = (
+        select(Short)
+        .where(Short.video_id == video_id)
+        .options(selectinload(Short.sources))
+        .order_by(Short.created_at.desc())
+    )
+    result = await db.execute(query)
+    shorts = result.scalars().all()
+    return [ShortResponse.model_validate(s) for s in shorts]
+
+
 @router.get("/{short_id}", response_model=ShortResponse, summary="Get Single Short")
 async def get_short(short_id: int, db: AsyncSession = Depends(get_db)):
     """Fetches a single Short script along with its exact source timestamp chunk citations."""

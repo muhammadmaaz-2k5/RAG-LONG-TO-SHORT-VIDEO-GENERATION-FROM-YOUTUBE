@@ -16,7 +16,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import { renderShortVideo } from '../services/api';
+import { renderShortVideo, extractErrorMessage } from '../services/api';
 
 export default function ShortCard({ short, onRegenerateClick, onShortUpdated, onError, onToast }) {
   const [rendering, setRendering] = useState(false);
@@ -42,7 +42,7 @@ export default function ShortCard({ short, onRegenerateClick, onShortUpdated, on
       if (onToast) onToast('Short video rendered and uploaded to Cloudinary successfully!');
     } catch (err) {
       console.error(err);
-      const msg = err.response?.data?.detail || err.message || 'Failed to render short video.';
+      const msg = extractErrorMessage(err);
       onError(msg);
     } finally {
       setRendering(false);

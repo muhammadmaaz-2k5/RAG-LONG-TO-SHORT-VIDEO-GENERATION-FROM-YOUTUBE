@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Flame, Sparkles, Clock, Sliders, Layers, RefreshCw, Zap, Video, Check } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { generateShorts } from '../services/api';
+import { generateShorts, extractErrorMessage } from '../services/api';
 
 export default function ShortsStudio({ activeVideo, onShortsGenerated, onError, onStageChange }) {
   const [duration, setDuration] = useState(15);
@@ -57,12 +57,12 @@ export default function ShortsStudio({ activeVideo, onShortsGenerated, onError, 
       }
 
       if (onShortsGenerated) {
-        onShortsGenerated(result.shorts);
+        onShortsGenerated(result.shorts || result.items || result);
       }
     } catch (err) {
       console.error(err);
       onStageChange(null);
-      const errMsg = err.response?.data?.detail || err.message || 'Failed to generate Shorts.';
+      const errMsg = extractErrorMessage(err);
       onError(errMsg);
     } finally {
       setGenerating(false);
