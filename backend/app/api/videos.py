@@ -183,6 +183,16 @@ async def process_video(video_id: int, db: AsyncSession = Depends(get_db)):
             message="Video processed successfully with timestamp-aware chunks and vector embeddings.",
         )
 
+    except TranscriptFetchError as e:
+        await db.rollback()
+        video_rec = (await db.execute(select(Video).where(Video.id == video_id))).scalar_one_or_none()
+        if video_rec:
+            video_rec.status = VideoStatus.FAILED
+            await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This YouTube video has no available spoken transcript or captions. Please try a video with spoken audio / English captions (like tutorials, podcasts, stories, or interviews).",
+        )
     except Exception as e:
         await db.rollback()
         # Cleanly update status to FAILED
