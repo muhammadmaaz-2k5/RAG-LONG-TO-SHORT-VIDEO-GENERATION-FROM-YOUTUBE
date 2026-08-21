@@ -6,7 +6,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.core.config import settings
-from app.core.database import Base
+from app.core.database import Base, normalize_async_db_url
 from app.models import Short, ShortSource, TranscriptChunk, Video  # Ensure all models registered
 
 # Alembic Config object
@@ -17,12 +17,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Set database URL dynamically from app settings
-db_url = settings.DATABASE_URL
-if db_url.startswith("postgresql://"):
-    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-elif db_url.startswith("postgres://"):
-    db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
-
+db_url = normalize_async_db_url(settings.DATABASE_URL)
 config.set_main_option("sqlalchemy.url", db_url)
 
 target_metadata = Base.metadata
