@@ -38,6 +38,11 @@ def transcribe_youtube_audio_with_whisper(
             "format": "bestaudio[ext=m4a]/bestaudio/best",
             "outtmpl": os.path.join(temp_dir, "audio.%(ext)s"),
             "ffmpeg_location": ffmpeg_exe,
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["android", "ios", "mweb"],
+                }
+            },
             "postprocessors": [
                 {
                     "key": "FFmpegExtractAudio",

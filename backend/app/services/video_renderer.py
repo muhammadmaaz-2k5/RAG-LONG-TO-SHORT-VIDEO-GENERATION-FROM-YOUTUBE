@@ -37,6 +37,11 @@ def download_youtube_clip(youtube_url: str, output_path: str) -> str:
         # "format": "best[ext=mp4]/bestvideo[height<=720]+bestaudio/best[height<=720]/best", # 720p option
         "outtmpl": output_path,
         "ffmpeg_location": ffmpeg_exe,
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "ios", "mweb"],
+            }
+        },
         "quiet": True,
         "no_warnings": True,
         "merge_output_format": "mp4",
