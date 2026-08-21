@@ -5,10 +5,23 @@ import { checkHealth } from '../services/api';
 export default function Navbar({ onSelectTab, activeTab }) {
   const [healthy, setHealthy] = useState(null);
 
-  useEffect(() => {
+  const verifyHealth = () => {
     checkHealth()
-      .then((data) => setHealthy(data.status === 'HEALTHY'))
+      .then((data) => {
+        const isOk =
+          data?.status === 'ok' ||
+          data?.status === 'HEALTHY' ||
+          data?.status === 'healthy' ||
+          data?.database === 'healthy';
+        setHealthy(isOk);
+      })
       .catch(() => setHealthy(false));
+  };
+
+  useEffect(() => {
+    verifyHealth();
+    const timer = setInterval(verifyHealth, 10000);
+    return () => clearInterval(timer);
   }, []);
 
   return (
@@ -49,9 +62,14 @@ export default function Navbar({ onSelectTab, activeTab }) {
           <span className="pipeline-chip"><Cpu size={13} /> Groq LLaMA/GPT</span>
           <span className="pipeline-chip"><Scissors size={13} /> FFmpeg 9:16</span>
         </div>
-        <div className={`health-indicator ${healthy ? 'online' : 'offline'}`} title="System Health">
+        <div
+          className={`health-indicator ${healthy === true ? 'online' : healthy === false ? 'offline' : 'connecting'}`}
+          title="Backend API & Database Health"
+        >
           <span className="status-dot"></span>
-          <span className="status-text">{healthy ? 'System Ready' : 'Connecting...'}</span>
+          <span className="status-text">
+            {healthy === true ? 'System Ready' : healthy === false ? 'Server Offline' : 'Connecting...'}
+          </span>
         </div>
       </div>
     </header>

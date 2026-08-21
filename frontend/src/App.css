@@ -131,6 +131,11 @@
   border-color: rgba(239, 68, 68, 0.2);
 }
 
+.health-indicator.connecting {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
 .status-dot {
   width: 8px;
   height: 8px;
@@ -144,6 +149,12 @@
   box-shadow: 0 0 10px #ef4444;
 }
 
+.health-indicator.connecting .status-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 10px #f59e0b;
+  animation: pulseGlow 1.5s infinite;
+}
+
 .status-text {
   font-size: 12px;
   font-weight: 600;
@@ -152,6 +163,10 @@
 
 .health-indicator.offline .status-text {
   color: #f87171;
+}
+
+.health-indicator.connecting .status-text {
+  color: #fbbf24;
 }
 
 /* --- Pipeline Visualizer --- */
