@@ -79,7 +79,7 @@ export default function VideoIngest({ onVideoProcessed, onError, onStageChange }
     <div className="ingest-card glass-panel-elevated">
       <div className="ingest-header">
         <div className="ingest-icon-box">
-          <Youtube className="yt-icon" size={28} />
+          <YoutubeIcon className="yt-icon" size={28} />
         </div>
         <div>
           <h2 className="ingest-title">Ingest YouTube Video</h2>
@@ -97,7 +97,7 @@ export default function VideoIngest({ onVideoProcessed, onError, onStageChange }
         }}
       >
         <div className="input-wrapper">
-          <Youtube className="input-icon" size={20} />
+          <YoutubeIcon className="input-icon" size={20} />
           <input
             type="url"
             className="url-input"
