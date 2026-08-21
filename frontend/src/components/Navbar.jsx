@@ -1,0 +1,59 @@
+import React, { useEffect, useState } from 'react';
+import { Sparkles, Activity, Layers, Cpu, Scissors, CheckCircle, Database } from 'lucide-react';
+import { checkHealth } from '../services/api';
+
+export default function Navbar({ onSelectTab, activeTab }) {
+  const [healthy, setHealthy] = useState(null);
+
+  useEffect(() => {
+    checkHealth()
+      .then((data) => setHealthy(data.status === 'HEALTHY'))
+      .catch(() => setHealthy(false));
+  }, []);
+
+  return (
+    <header className="navbar-container glass-panel">
+      <div className="navbar-brand">
+        <div className="brand-logo-glow">
+          <Sparkles className="brand-icon" size={24} />
+        </div>
+        <div>
+          <div className="brand-title">
+            <span>ShortsForge</span>
+            <span className="brand-ai-badge">AI</span>
+          </div>
+          <p className="brand-tagline">RAG Long-to-Shorts Pipeline</p>
+        </div>
+      </div>
+
+      <nav className="navbar-nav">
+        <button
+          className={`nav-item ${activeTab === 'create' ? 'active' : ''}`}
+          onClick={() => onSelectTab('create')}
+        >
+          <Scissors size={17} />
+          <span>Shorts Studio</span>
+        </button>
+        <button
+          className={`nav-item ${activeTab === 'library' ? 'active' : ''}`}
+          onClick={() => onSelectTab('library')}
+        >
+          <Layers size={17} />
+          <span>Video Library</span>
+        </button>
+      </nav>
+
+      <div className="navbar-status">
+        <div className="pipeline-chips">
+          <span className="pipeline-chip"><Database size={13} /> pgvector</span>
+          <span className="pipeline-chip"><Cpu size={13} /> Groq LLaMA/GPT</span>
+          <span className="pipeline-chip"><Scissors size={13} /> FFmpeg 9:16</span>
+        </div>
+        <div className={`health-indicator ${healthy ? 'online' : 'offline'}`} title="System Health">
+          <span className="status-dot"></span>
+          <span className="status-text">{healthy ? 'System Ready' : 'Connecting...'}</span>
+        </div>
+      </div>
+    </header>
+  );
+}
