@@ -17,6 +17,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { renderShortVideo, extractErrorMessage } from '../services/api';
+import VerticalVideoPlayer from './VerticalVideoPlayer';
 
 export default function ShortCard({ short, onRegenerateClick, onShortUpdated, onError, onToast }) {
   const [rendering, setRendering] = useState(false);
@@ -133,21 +134,11 @@ export default function ShortCard({ short, onRegenerateClick, onShortUpdated, on
         {/* Left Column: 9:16 Video Player or Render Placeholder */}
         <div className="short-video-container">
           {short.video_url ? (
-            <div className="rendered-video-wrapper">
-              <video
-                src={short.video_url}
-                className="vertical-video-player"
-                controls
-                playsInline
-                preload="metadata"
-                loop
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-              />
-              <div className="video-overlay-badge">
-                <span>9:16 HD</span>
-              </div>
-            </div>
+            <VerticalVideoPlayer
+              videoUrl={short.video_url}
+              durationSeconds={short.duration_seconds || 15}
+              title={short.title}
+            />
           ) : (
             <div className="video-placeholder-box">
               <div className="placeholder-phone-frame">

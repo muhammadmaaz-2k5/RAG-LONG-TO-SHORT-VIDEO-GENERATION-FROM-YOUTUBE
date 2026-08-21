@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import PipelineVisualizer from './components/PipelineVisualizer';
+import RealtimeProgressTracker from './components/RealtimeProgressTracker';
+import SourceVideoPlayer from './components/SourceVideoPlayer';
 import VideoIngest from './components/VideoIngest';
 import ShortsStudio from './components/ShortsStudio';
 import ShortCard from './components/ShortCard';
@@ -19,7 +21,8 @@ export default function App() {
   const [toast, setToast] = useState(null);
 
   const showToast = (message, type = 'success') => {
-    setToast({ message, type });
+    const text = typeof message === 'string' ? message : JSON.stringify(message);
+    setToast({ message: text, type });
   };
 
   const showError = (message) => {
@@ -95,16 +98,22 @@ export default function App() {
         }
       />
 
+      {/* 3. Real-Time Pipeline Progress Tracker (Live Tracing & Terminal Logs) */}
+      <RealtimeProgressTracker activeStage={pipelineStage} />
+
       {activeTab === 'create' ? (
         <>
-          {/* 3. YouTube URL Ingestion */}
+          {/* 4. YouTube URL Ingestion */}
           <VideoIngest
             onVideoProcessed={handleVideoProcessed}
             onError={showError}
             onStageChange={setPipelineStage}
           />
 
-          {/* 4. Generation Controls Studio (15s, 30s, 60s & Styles) */}
+          {/* 5. Active Source Video Player */}
+          {activeVideo && <SourceVideoPlayer video={activeVideo} />}
+
+          {/* 6. Generation Controls Studio (15s, 30s, 60s & Styles) */}
           <ShortsStudio
             activeVideo={activeVideo}
             onShortsGenerated={handleShortsGenerated}
@@ -112,7 +121,7 @@ export default function App() {
             onStageChange={setPipelineStage}
           />
 
-          {/* 5. Generated Shorts Feed & 9:16 Video Player */}
+          {/* 7. Generated Shorts Feed with 9:16 Video Player */}
           {shorts && shorts.length > 0 && (
             <div className="shorts-feed">
               <div className="feed-header">
@@ -121,7 +130,7 @@ export default function App() {
                     Generated Shorts Feed ({shorts.length} Candidates)
                   </h3>
                   <p className="pipeline-subtitle">
-                    Preview scroll-stopping hooks, render 9:16 vertical video clips, and export MP4s.
+                    Watch rendered 9:16 vertical video clips, preview scroll-stopping hooks, and export MP4s.
                   </p>
                 </div>
               </div>
@@ -140,14 +149,14 @@ export default function App() {
           )}
         </>
       ) : (
-        /* 6. Video Database Library Tab */
+        /* 8. Video Database Library Tab */
         <VideoLibrary
           activeVideoId={activeVideo?.id}
           onSelectVideo={handleSelectVideoFromLibrary}
         />
       )}
 
-      {/* 7. Script Regeneration Modal */}
+      {/* 9. Script Regeneration Modal */}
       {regenerateShort && (
         <RegenerateModal
           short={regenerateShort}
@@ -158,7 +167,7 @@ export default function App() {
         />
       )}
 
-      {/* 8. Toast Feedback */}
+      {/* 10. Toast Feedback */}
       {toast && (
         <Toast
           message={toast.message}
